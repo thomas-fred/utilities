@@ -34,6 +34,9 @@ for ID in $(seq $HOST_START $HOST_END); do
         'bash' < ~/utilities/cpu_demand/cpu_demand.sh >> $TEMP_RESULTS_PATH &
 done
 
+# print header
+printf "%-21s %20s %5s %10s\n" "Hostname" "Processes (15m avg.)" "Cores" "Demand (%)"
+
 # wait for responses
 PID=$!  # process ID of last job to be launched
 INDEX=1
@@ -53,10 +56,19 @@ printf "\r"
 # use wait to ensure backgrounded jobs have completed
 wait
 
-# print header
-printf "%-21s %20s %5s %10s\n" "Hostname" "Processes (15m avg.)" "Cores" "Demand (%)"
-
-# sort the nodes to descending demand order
-sort --key 4 --numeric < $TEMP_RESULTS_PATH | tac
+# check a response file exists
+if [ -f "$TEMP_RESULTS_PATH" ]; then
+    # if it does, check it's not empty
+    if [ -s "$TEMP_RESULTS_PATH" ]; then
+        # sort the nodes to descending demand order and print to stdout
+        sort --key 4 --numeric < $TEMP_RESULTS_PATH | tac
+    else
+        # there's a file, but it's empty, i.e. we probably couldn't connect
+        printf "\rError: No responses. Are your keys on the remotes?\n"
+    fi
+else
+    # we never seem to end up here, i.e. a file is always created
+    printf "\rError: No response file generated.\n"
+fi
 
 rm $TEMP_RESULTS_PATH
