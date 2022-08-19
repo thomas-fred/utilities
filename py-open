@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Try and read data files, summarise the data and open a Python prompt.
+"""
+
+import logging
+import os
+import warnings
+from sys import argv
+from typing import Callable
+
+# silence performance warning from geopandas
+warnings.filterwarnings("ignore", message=".*incompatible with the GEOS version*")
+import geopandas as gpd
+import pandas as pd
+
+
+# what to use on each file
+EXTENSION_READER: dict[str, Callable] = {
+    "geoparquet": gpd.read_parquet,
+    "gpkg": gpd.read_file,
+    "parquet": pd.read_parquet,
+    "csv": pd.read_csv,
+}
+
+
+if __name__ == "__main__":
+
+    if len(argv) < 2:
+        raise ValueError(f"need at least one path to try and open, given {len(argv)}")
+
+    logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
+
+    # hold a reference to each successfully opened file here
+    data: dict[str, pd.DataFrame] = {}
+
+    for path in argv[1:]:
+        # drop reference to previous dataframe
+        df = None
+
+        logging.info(f"--> {path}")
+
+        if not os.path.exists(path):
+            logging.info(f"couldn't find {path} from {os.getcwd()}")
+            continue
+
+        _, ext = os.path.splitext(path)
+        if ext.strip() == '':
+            logging.info(f"couldn't identify a file extension for {path}")
+            continue
+
+        try:
+            # discard the leading dot and select a function from the map
+            reader: Callable = EXTENSION_READER[ext[1:]]
+        except KeyError:
+            logging.info(f"don't know how to open {ext} files")
+            continue
+
+        df = reader(path)
+
+        # store data in case we want to access it in future loop iteration
+        # e.g. for quickly comparing files
+        data[path] = df
+
+        logging.info(f"{df.shape=}")
+        logging.info(f"{df.columns=}")
+        logging.info(f"\n{df.head()}")
+
+        # pause for poking
+        breakpoint()
+
+    if len(data) > 0:
+        logging.info(f"successfully read:")
+        [logging.info(p) for p in data.keys()]
+        breakpoint()

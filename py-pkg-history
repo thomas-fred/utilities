@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Prints when python packages were installed.
+"""
+
+from importlib import metadata
+import os
+import pkg_resources
+import re
+import sys
+import time
+from glob import glob
+
+
+class Package:
+    def __init__(self, init_path):
+        self.init_path = init_path
+        self.directory_path = self.init_path.replace("/__init__.py", "")
+        dir_path, name = os.path.split(self.directory_path)
+        self.name = name
+        self.dir_path = dir_path
+        self.version = self.get_version()
+
+    def get_version(self) -> str:
+        try:
+            return metadata.version(self.name)
+        except:
+            return "?"
+
+
+def file_creation_time(path: str) -> str:
+    return time.ctime(os.path.getctime(path))
+
+
+if __name__ == "__main__":
+
+    # list of tuples of location path & package directory name
+    # example tuple: ('<conda-env>/python3.9/site-packages/', 'numpy')
+    packages: list[Package] = []
+    for location in {package.location for package in pkg_resources.working_set}:
+        # look for all folders containing an __init__.py in each location
+        for init_path in glob(f"{location}/*/__init__.py"):
+            packages.append(Package(init_path))
+
+    # natural sort list by package directory name
+    packages = sorted(
+        packages,
+        # N.B. plain sorted builtin would sort to ABCabc not AaBbCc, so use following lambda
+        key=lambda package: [
+            int(t) if t.isdigit() else t.lower()
+            for t in re.split("(\d+)", package.name)
+        ],
+    )
+
+    # determine width of columns
+    name_str_width: int = max(map(len, [package.name for package in packages]))
+    version_str_width: int = max(map(len, [package.version for package in packages]))
+    date_str_width: int = len(file_creation_time(sys.argv[0]))
+    # header
+    print(
+        "{:{:d}} {:{:d}} {:{:d}} {:s}".format(
+            "Package name",
+            name_str_width,
+            "Version",
+            version_str_width,
+            "Creation time",
+            date_str_width,
+            "Install location",
+        )
+    )
+    # data
+    for package in packages:
+        print(
+            "{:{:d}} {:{:d}} {:s} {:s}".format(
+                package.name,
+                name_str_width,
+                package.version,
+                version_str_width,
+                file_creation_time(package.directory_path),
+                package.directory_path,
+            )
+        )
