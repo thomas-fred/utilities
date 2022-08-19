@@ -1,23 +1,24 @@
 #!/bin/bash
 
+# query the linux.ouce.ox.ac.uk nodes to see how busy they are
+
 # for this to work, you must have already put your keys on the hosts
 # also, the permissions for the remote .ssh folder (and others) must be correct
 # see here for more details: https://unix.stackexchange.com/a/36687
 
 USER=$1
 
-SSH_TIMEOUT=3
+SSH_TIMEOUT=5
 HOST_START=1
 HOST_END=34
 
 if [[ -z $USER ]]; then
-    echo "must supply user, usage:"
+    echo "must supply user, example usage:"
     echo "$0 cenv0899"
     exit 1
 fi
 
-
-printf "%-21s %20s %5s %10s\n" "Hostname" "Processes (15m avg.)" "Cores" "Demand (%)"
+TEMP_RESULTS_PATH=$(date --iso-8601=seconds)_ouce_cluster_load.dat
 
 for ID in $(seq $HOST_START $HOST_END); do
     HOST="linux${ID}.ouce.ox.ac.uk"
@@ -30,8 +31,32 @@ for ID in $(seq $HOST_START $HOST_END); do
         -l ${USER} \
         -q \
         ${HOST} \
-        'bash' < ~/utilities/cpu_demand/cpu_demand.sh &
+        'bash' < ~/utilities/cpu_demand/cpu_demand.sh >> $TEMP_RESULTS_PATH &
 done
 
-# wait for backgrounded jobs to complete
+# wait for responses
+PID=$!  # process ID of last job to be launched
+INDEX=1
+SPINNER_ARRAY="/-\|"
+while [ -d /proc/$PID ]
+do
+    printf "\rWaiting ${SSH_TIMEOUT}s for responses...  "
+    printf "\b${SPINNER_ARRAY:INDEX++%${#SPINNER_ARRAY}:1}"
+    sleep 0.1
+done
+
+# delete waiting line
+printf "\r"
+
+# after the spinner completes, every backgrounded job should have completed
+# as they all have the same timeout, but to be sure we've got all the results,
+# use wait to ensure backgrounded jobs have completed
 wait
+
+# print header
+printf "%-21s %20s %5s %10s\n" "Hostname" "Processes (15m avg.)" "Cores" "Demand (%)"
+
+# sort the nodes to descending demand order
+sort --key 4 --numeric < $TEMP_RESULTS_PATH | tac
+
+rm $TEMP_RESULTS_PATH
