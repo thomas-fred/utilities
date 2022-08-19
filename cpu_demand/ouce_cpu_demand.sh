@@ -30,7 +30,7 @@ for ID in $(seq $HOST_START $HOST_END); do
         -l ${USER} \
         -q \
         ${HOST} \
-        'bash' < ~/bin/cpu_demand/cpu_demand.sh &
+        'bash' < ~/utilities/cpu_demand/cpu_demand.sh &
 done
 
 # wait for backgrounded jobs to complete
