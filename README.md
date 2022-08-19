@@ -1,7 +1,7 @@
 Some handy little scripts:
-- `ouce-cluster`: checking OUCE cluster demand by node
-- `py-open`: quickly opening datafiles files with (geo)pandas
-- `pk-pkg-history`: display Python packages, locations and install dates
+- `ouce-cluster`: check OUCE cluster demand by node
+- `py-open`: quickly open datafiles files with (geo)pandas, drop into prompt
+- `pk-pkg-history`: display installed Python packages, locations and install dates
 - `mdb-to-csv`: translate a Microsoft Access database into a set of CSV files
 
 ## Installation
