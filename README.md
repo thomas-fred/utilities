@@ -6,10 +6,6 @@ Some handy little scripts:
 
 ## Installation
 
-1) Clone this directory, e.g.:
+1) Clone this directory, e.g. `git clone https://github.com/thomas-fred/utilities.git`
 
-`git clone https://github.com/thomas-fred/utilities.git`
-
-2) Add the directory to your path, e.g.:
-
-`export PATH="$PATH:$HOME/utilities"`
+2) Add the directory to your path, e.g. `export PATH="$PATH:$HOME/utilities"`
