@@ -1,0 +1,4 @@
+#/bin/bash
+
+# back up the results folder (but not input) of open-gira
+~/open-gira/archive_results.sh ~/open-gira/results ~/open-gira_archive
