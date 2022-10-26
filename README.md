@@ -3,6 +3,7 @@ Some handy little scripts:
 - `py-open`: quickly open datafiles files with (geo)pandas, drop into prompt
 - `pk-pkg-history`: display installed Python packages, locations and install dates
 - `mdb-to-csv`: translate a Microsoft Access database into a set of CSV files
+- `update-gateway-ssh-config`: Update a remote host's SSH config with your host's IP
 
 ## Installation
 
