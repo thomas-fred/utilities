@@ -1,0 +1,47 @@
+#/bin/bash
+
+# given three machines, A, B and C
+# < LAN > | < Public >
+#    A    B     C
+# A is a machine inside the network with a dynamically assigned IP address
+# B is a machine reachable from inside and out with a hostname that resolves to an IP
+# C is a machine on the public internet
+# this script updates the SSH config on B such that a user at B (or C logged into to B)
+# could SSH into A without having to know the IP address of A
+
+# we achieve this by regularly updating the SSH config on our gateway machine
+# such that from the gateway, `ssh <hostname>` will get us to this machine
+
+# N.B. we do not have permission to edit the /etc/hosts file on B
+
+set -ex
+
+if [[ -z $1  ]]; then
+    echo "No gateway username supplied"
+    exit 1
+fi
+
+if [[ -z $2  ]]; then
+    echo "No gateway hostname supplied"
+    exit 1
+fi
+
+GATEWAY_USERNAME=$1
+GATEWAY_HOSTNAME=$2
+TMP_FILE=$(mktemp -q /tmp/tmp-XXXXXXXX)
+
+# read our network config for our local network IP
+LOCAL_NETWORK_IP=$(ifconfig | grep "inet 192.168" | awk '{printf $2}')
+
+cat << EOF > $TMP_FILE
+# this file generated at $(date) on $(hostname) and copied to ${GATEWAY_HOSTNAME}
+# any manual edits to this file may be overridden before long...
+Host $(hostname)
+    HostName ${LOCAL_NETWORK_IP}
+    User $(whoami)
+    ForwardAgent yes
+EOF
+
+scp $TMP_FILE $GATEWAY_USERNAME@$GATEWAY_HOSTNAME:~/.ssh/config
+
+rm $TMP_FILE
