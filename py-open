@@ -15,6 +15,7 @@ from typing import Callable
 warnings.filterwarnings("ignore", message=".*incompatible with the GEOS version*")
 import geopandas as gpd
 import pandas as pd
+import xarray as xr
 
 
 # what to use on each file
@@ -23,6 +24,7 @@ EXTENSION_READER: dict[str, Callable] = {
     "gpkg": gpd.read_file,
     "parquet": pd.read_parquet,
     "csv": pd.read_csv,
+    "nc": xr.open_dataset,
 }
 
 
