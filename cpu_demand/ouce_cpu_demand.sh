@@ -18,7 +18,7 @@ if [[ -z $USER ]]; then
     exit 1
 fi
 
-TEMP_RESULTS_PATH=$(date --iso-8601=seconds)_ouce_cluster_load.dat
+TEMP_RESULTS_PATH=/tmp/$(date --iso-8601=seconds)_ouce_cluster_load.dat
 
 for ID in $(seq $HOST_START $HOST_END); do
     HOST="linux${ID}.ouce.ox.ac.uk"
