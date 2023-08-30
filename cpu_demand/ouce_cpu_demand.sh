@@ -39,19 +39,12 @@ printf "%-21s %20s %5s %10s %5s %5s %5s\n" "Hostname" "Processes (15m avg.)" "Co
 
 # wait for responses
 PID=$!  # process ID of last job to be launched
-INDEX=1
-SPINNER_ARRAY="/-\|"
 while [ -d /proc/$PID ]
 do
-    printf "\rWaiting ${SSH_TIMEOUT}s for responses...  "
-    printf "\b${SPINNER_ARRAY:INDEX++%${#SPINNER_ARRAY}:1}"
     sleep 0.1
 done
 
-# delete waiting line
-printf "\r"
-
-# after the spinner completes, every backgrounded job should have completed
+# after sleeping, every backgrounded job should have completed
 # as they all have the same timeout, but to be sure we've got all the results,
 # use wait to ensure backgrounded jobs have completed
 wait
