@@ -66,9 +66,7 @@ if __name__ == "__main__":
         # e.g. for quickly comparing files
         data[path] = df
 
-        logging.info(f"{df.shape=}")
-        logging.info(f"{df.columns=}")
-        logging.info(f"\n{df.head()}")
+        logging.info(f"\n{df}")
 
         # pause for poking
         breakpoint()
