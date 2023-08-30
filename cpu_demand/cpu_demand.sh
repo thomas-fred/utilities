@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# print some human readable CPU utilisation information
+# print some human readable resource utilisation information
 
 function core_count() {
     # lscpu in -p(arsable) format
@@ -19,9 +19,30 @@ function run_queue_15m_average() {
     echo $AVERAGE
 }
 
+function tot_mem_gb() {
+    # example output from free --giga
+    #                total        used        free      shared  buff/cache   available
+    # Mem:             134          20         109           0           4         112
+    # Swap:              2           1           1
+    TOT_MEM_GB=$(free --giga | grep Mem: | awk '{printf $2}')
+    echo $TOT_MEM_GB
+}
+
+function used_mem_gb() {
+    # example output from free --giga
+    #                total        used        free      shared  buff/cache   available
+    # Mem:             134          20         109           0           4         112
+    # Swap:              2           1           1
+    USED_MEM_GB=$(free --giga | grep Mem: | awk '{printf $3}')
+    echo $USED_MEM_GB
+}
+
 # use python to do the division because bc is too arcane even for me
-printf "%-21s %20.2f %5d %10.1f\n" \
+printf "%-21s %20.2f %5d %14.1f %12d %13d %19.2f\n" \
     $(hostname) \
     $(run_queue_15m_average) \
     $(core_count) \
-    $(python3 -c "print(100 * $(run_queue_15m_average) / $(core_count))")
+    $(python3 -c "print(100 * $(run_queue_15m_average) / $(core_count))") \
+    $(tot_mem_gb) \
+    $(used_mem_gb) \
+    $(python3 -c "print(100 * $(used_mem_gb) / $(tot_mem_gb))")

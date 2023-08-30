@@ -35,7 +35,7 @@ for ID in $(seq $HOST_START $HOST_END); do
 done
 
 # print header
-printf "%-21s %20s %5s %10s\n" "Hostname" "Processes (15m avg.)" "Cores" "Demand (%)"
+printf "%-21s %20s %5s %10s %5s %5s %5s\n" "Hostname" "Processes (15m avg.)" "Cores" "CPU demand (%)" "Mem tot [GB]" "Mem used [GB]" "Mem utilisation (%)"
 
 # wait for responses
 PID=$!  # process ID of last job to be launched
