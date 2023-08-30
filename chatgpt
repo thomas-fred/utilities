@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# call the openai gpt-3.5-turbo model on some prompt, clean the output and print
+
+set -e
+
+usage () {
+    echo "Please provide a prompt to complete, e.g."
+    echo "$0 'Please explain the most important discoveries in modern cosmology to a postgraduate level.'"
+    exit 1
+}
+
+if [[ -z $(which openai) ]]; then
+    echo "The openai executable is not available."
+    echo "To install into a conda environment, use 'micromamba install openai'."
+    exit 1
+fi
+
+if [[ $# -ne 1 ]]; then
+    usage
+    exit 1
+fi
+
+if [ -z $OPENAI_API_KEY ]; then
+    echo "Please set OPENAI_API_KEY to a valid key."
+    echo "Current value: <${OPENAI_API_KEY}>"
+    exit 1
+fi
+
+RESPONSE=$(openai -k $OPENAI_API_KEY api chat_completions.create -m gpt-3.5-turbo -M 4000 -g user "$1")
+
+# wrap to 80 chars and print to STDOUT
+echo $RESPONSE | fold -s -w 80
