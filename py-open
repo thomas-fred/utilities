@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/home/fred/micromamba/envs/open-gira/bin/python
 # -*- coding: utf-8 -*-
 
 """
 Try and read data files, summarise the data and open a Python prompt.
 """
 
+import json
 import logging
 import os
 import warnings
@@ -18,20 +19,33 @@ import pandas as pd
 import xarray as xr
 
 
+def read_json(path: str) -> dict:
+    with open(path, "r") as fp:
+        data = json.load(fp)
+    return data
+
+
 # what to use on each file
 EXTENSION_READER: dict[str, Callable] = {
     "geoparquet": gpd.read_parquet,
+    "gpq": gpd.read_parquet,
     "gpkg": gpd.read_file,
+    "shp": gpd.read_file,
     "parquet": pd.read_parquet,
+    "parq": pd.read_parquet,
+    "pq": pd.read_parquet,
     "csv": pd.read_csv,
     "nc": xr.open_dataset,
+    "tif": xr.open_dataset,
+    "tiff": xr.open_dataset,
+    "json": read_json,
 }
 
 
 if __name__ == "__main__":
 
     if len(argv) < 2:
-        raise ValueError(f"need at least one path to try and open, given {len(argv)}")
+        raise ValueError(f"need at least one path to try and open, given {len(argv) - 1}")
 
     logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
@@ -39,6 +53,9 @@ if __name__ == "__main__":
     data: dict[str, pd.DataFrame] = {}
 
     for path in argv[1:]:
+
+        path = path.rstrip("/")
+
         # drop reference to previous dataframe
         df = None
 
@@ -67,9 +84,6 @@ if __name__ == "__main__":
         data[path] = df
 
         logging.info(f"\n{df}")
-
-        # pause for poking
-        breakpoint()
 
     if len(data) > 0:
         logging.info(f"successfully read:")
