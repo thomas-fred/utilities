@@ -11,7 +11,7 @@
 # B) Be queued and then run successfully later on a currently busy node
 # C) Be eaten by a bad node, vanishing from the queue and not producing any output
 #
-# This script lists the nodes in class B & C
+# This script lists the nodes involved in class B & C behaviour
 # You may use the resulting list as part of an --exclude argument to SLURM, e.g.
 # srun -p Short --exclude=$(exclude-list Short) bash -c "date && hostname"
 
@@ -29,8 +29,8 @@ else
 fi
 
 # use sinfo to query SLURM for the nodes it recognises as up
-# this may not necessarily be all of 01..59
-# and an exclude request with a non-existent node will fail
+# this may not necessarily be all of 01..max
+# N.B. an exclude request with a non-existent node will fail
 ACTIVE_NODES=$(sinfo --json | jq --raw-output .nodes[].name)
 ACTIVE_NODES_FILE=$(mktemp)
 echo $ACTIVE_NODES > $ACTIVE_NODES_FILE
@@ -52,7 +52,7 @@ CLASS_A=$(test_nodes 2>&1 | grep ouce-)
 CLASS_A_FILE=$(mktemp)
 echo $CLASS_A > $CLASS_A_FILE
 
-# find the difference betwee $ACTIVE_NODES and $CLASS_A
+# find the difference between active and class A sets
 # print to STDOUT
 python -c "
 with open('$CLASS_A_FILE', 'r') as fp:
