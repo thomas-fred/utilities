@@ -1,0 +1,8 @@
+#!/home/fred/micromamba/envs/default/bin/python3
+
+import sys
+import json
+import yaml
+
+print(yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False))
+
