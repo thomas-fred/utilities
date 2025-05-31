@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# 20250109
+# F. Thomas & T. Russell
+# Some OUCE cluster nodes are silently swallowing jobs
+# Submitted jobs may:
+# 1) Run immediately on a free node
+# 2) Be queued and then run successfully later on a currently busy node
+# 3) Be eaten by a bad node, vanishing from the queue and not producing any output
+# This script lists the nodes in class 1
+# You may use the resulting list as part of a --nodelist argument to SLURM
+
+usage() {
+    echo "Run with partition as argument to determine currently available nodes, e.g."
+    echo "$0 Short"
+}
+
+PARTITION=$1
+if [[ "$PARTITION" =~ ^(Short|Medium|Long|GPU)$ ]]; then
+    :
+else
+    usage
+    exit 1
+fi
+
+test_nodes() {
+    # launch a small job on each node to see if it runs
+    for num in {01..59}
+    do
+        srun -p $PARTITION --nodelist=ouce-cn${num} bash -c "hostname" &
+    done
+
+    sleep 2
+
+    # cancel any jobs that are pending (busy nodes)
+    scancel --state=PENDING --user=$USER
+}
+
+# happy nodes that immediately ran our job
+NODES=$(test_nodes 2>&1 | grep ouce- | sort -n | tr '\n' ',')
+
+# drop the trailing comma and echo to STDOUT
+echo ${NODES::-1}
