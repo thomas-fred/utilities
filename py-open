@@ -27,18 +27,20 @@ def read_json(path: str) -> dict:
 
 # what to use on each file
 EXTENSION_READER: dict[str, Callable] = {
-    "geoparquet": gpd.read_parquet,
-    "gpq": gpd.read_parquet,
-    "gpkg": gpd.read_file,
-    "shp": gpd.read_file,
-    "parquet": pd.read_parquet,
-    "parq": pd.read_parquet,
-    "pq": pd.read_parquet,
     "csv": pd.read_csv,
+    "geoparquet": gpd.read_parquet,
+    "gpkg": gpd.read_file,
+    "gpq": gpd.read_parquet,
+    "json": read_json,
+    "parq": pd.read_parquet,
+    "parquet": pd.read_parquet,
+    "pq": pd.read_parquet,
     "nc": xr.open_dataset,
+    "shp": gpd.read_file,
     "tif": xr.open_dataset,
     "tiff": xr.open_dataset,
-    "json": read_json,
+    "xlsx": pd.read_excel,
+    "zarr": xr.open_zarr,
 }
 
 
