@@ -40,7 +40,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df = pd.read_csv(args.log_path)
-    #df["datetime"] = pd.to_datetime(df.datetime, format="%Y-%m-%dT%H:%M:%S.%f")
     df["datetime"] = pd.to_datetime(df.datetime)
     df = df.set_index("datetime")
     df = df.loc[args.filter_from: args.filter_to]
@@ -54,11 +53,13 @@ if __name__ == "__main__":
 
     f, ax = plt.subplots(figsize=(14, 8))
 
-    ax.plot(df.index, df["buff/cache"], label="Buffer/cache", alpha=0.5, c="orange")
-    ax.plot(df.index, df["available"], label="Available", alpha=0.5, c="teal")
-    ax.plot(df.index, df["used"], label="Used", alpha=0.3, c="purple")
-    ax.plot(df.index, df["used_less_buff/cache"], label="Used - buffer/cache", c="red")
-    ax.axhline(peak_usage_gb, ls='--', color="red", label="Peak usage", alpha=0.3)
+    ax.plot(df.index, df["buff/cache"], label="Mem: buff/cache", alpha=0.5, c="orange")
+    ax.plot(df.index, df["available"], label="Mem: free", alpha=0.5, c="teal")
+    ax.plot(df.index, df["used"], label="Mem: used", alpha=0.3, c="purple")
+    ax.plot(df.index, df["used_less_buff/cache"], label="Mem: used - buff/cache", c="red")
+    ax.plot(df.index, df["swap_free"], ls='dotted', label="Swap: free", c="cornflowerblue")
+    ax.plot(df.index, df["swap_used"], ls='dotted', label="Swap: used", c="hotpink")
+    ax.axhline(peak_usage_gb, ls='--', color="red", label="Mem: peak", alpha=0.3)
 
     ax.set_xlabel("Time", labelpad=10)
     date_formatter = lambda x, pos: matplotlib.dates.DateFormatter('%H:%M:%S')(x)
@@ -76,14 +77,16 @@ if __name__ == "__main__":
     # Set y limit prior to plotting installed memory
     # (if we're at low utilisation, we don't care about the limit)
     ax.set_ylim(0, ymax)
-    ax.axhline(total_gb, ls='--', color="black", label=f"Installed", alpha=0.5)
+    ax.axhline(total_gb, ls='--', color="black", label=f"Mem: installed", alpha=0.5)
 
     ax.grid(which="both", alpha=0.2, c="grey")
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.legend(loc="upper center", ncol=len(ax.lines), bbox_to_anchor=(0.5, 1.1, 0, 0))
+    handles, labels = ax.get_legend_handles_labels()
+    labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+    ax.legend(handles, labels, loc="upper center", ncol=4, bbox_to_anchor=(0.5, 1.15, 0, 0))
 
-    plt.subplots_adjust(left=0.13, top=0.85, bottom=0.17, right=0.9)
+    plt.subplots_adjust(left=0.1, top=0.85, bottom=0.17, right=0.95)
 
     f.savefig(args.plot_path, facecolor=ax.get_facecolor())
     logging.info(f"Written plot to {args.plot_path}")
