@@ -14,9 +14,9 @@
 
 echo "datetime,total,used,free,shared,buff/cache,available,swap_total,swap_used,swap_free"
 while true; do
-    DATETIME="$(date '+%Y-%m-%dT%H:%M:%S.%3N%:z')"
-    MEM="$(free -m | grep Mem: | sed 's/Mem://g')"
-    SWAP="$(free -m | grep Swap: | sed 's/Swap://g')"
-    echo $DATETIME $MEM $SWAP | sed -r "s/[[:space:]]+/,/g"
+    DATETIME=$(date '+%Y-%m-%dT%H:%M:%S.%3N%:z')
+    MEM=$(free -m | grep Mem: | sed 's/Mem://g')
+    SWAP=$(free -m | grep Swap: | sed 's/Swap://g')
+    echo "$DATETIME" "$MEM" "$SWAP" | sed -r "s/[[:space:]]+/,/g"
     sleep 0.25
 done
