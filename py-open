@@ -16,6 +16,7 @@ from typing import Callable
 warnings.filterwarnings("ignore", message=".*incompatible with the GEOS version*")
 import geopandas as gpd
 import pandas as pd
+import scipy.io
 import xarray as xr
 
 
@@ -32,10 +33,11 @@ EXTENSION_READER: dict[str, Callable] = {
     "gpkg": gpd.read_file,
     "gpq": gpd.read_parquet,
     "json": read_json,
+    "nc": xr.open_dataset,
+    "mat": scipy.io.loadmat,
     "parq": pd.read_parquet,
     "parquet": pd.read_parquet,
     "pq": pd.read_parquet,
-    "nc": xr.open_dataset,
     "shp": gpd.read_file,
     "tif": xr.open_dataset,
     "tiff": xr.open_dataset,
