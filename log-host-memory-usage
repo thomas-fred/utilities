@@ -1,0 +1,19 @@
+#!/bin/bash -e
+
+# Log memory usage on a node
+#
+# Print a header and then the memory usage statistics to stdout (comma separated output)
+# Typical usage:
+# $ log-host-memory-usage > memory.log
+#
+# Note that this logs the all the memory allocated on the host, not only your jobs
+# You may request exclusive use of a node with the following sbatch directive:
+# #SBATCH --exclusive
+#
+# plot-memory-usage may be used to plot the logged timeseries
+
+echo "datetime $(free -m | grep total | sed -E 's/^    (.*)/\1/g')" | sed -r "s/[[:space:]]+/,/g"
+while true; do
+    echo "$(date '+%Y-%m-%dT%H:%M:%S.%6N%:z') $(free -m | grep Mem: | sed 's/Mem://g')" | sed -r "s/[[:space:]]+/,/g"
+    sleep 0.25
+done

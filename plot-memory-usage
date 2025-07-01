@@ -1,0 +1,90 @@
+#!/home/fred/micromamba/envs/default/bin/python
+
+"""
+Take a file produced with log-host-memory-usage, plot it and write to disk.
+Usage:
+$ plot-memory-usage <log_file> <plot_file>
+"""
+
+import argparse
+import datetime
+import logging
+
+import matplotlib
+import matplotlib.dates
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+import pandas as pd
+
+
+if __name__ == "__main__":
+
+    logging.basicConfig(format="%(asctime)s %(process)d %(filename)s %(message)s", level=logging.INFO)
+
+    plt.style.use('Solarize_Light2')
+    matplotlib.use('Agg')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("log_path", help="Path to log file (created with log-host-memory-usage)")
+    parser.add_argument("plot_path", help="Path to create output plot file")
+    parser.add_argument(
+        "--filter-from",
+        help=f"Filter log entries from this time, e.g. {datetime.datetime.now().replace(microsecond=0).isoformat()}",
+        type=datetime.datetime.fromisoformat
+    )
+    parser.add_argument(
+        "--filter-to",
+        help=f"Filter log entries until this time, e.g. {datetime.datetime.now().replace(microsecond=0).isoformat()}",
+        type=datetime.datetime.fromisoformat
+    )
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.log_path)
+    #df["datetime"] = pd.to_datetime(df.datetime, format="%Y-%m-%dT%H:%M:%S.%f")
+    df["datetime"] = pd.to_datetime(df.datetime)
+    df = df.set_index("datetime")
+    df = df.loc[args.filter_from: args.filter_to]
+
+    # We assume log input is in MB; will display in GB
+    df = df / 1000.0
+
+    df["used_less_buff/cache"] = df["used"] - df["buff/cache"]
+    total_gb = float(df["total"].mean())
+    peak_usage_gb = float(df["used_less_buff/cache"].max())
+
+    f, ax = plt.subplots(figsize=(14, 8))
+
+    ax.plot(df.index, df["buff/cache"], label="Buffer/cache", alpha=0.5, c="orange")
+    ax.plot(df.index, df["available"], label="Available", alpha=0.5, c="teal")
+    ax.plot(df.index, df["used"], label="Used", alpha=0.3, c="purple")
+    ax.plot(df.index, df["used_less_buff/cache"], label="Used - buffer/cache", c="red")
+    ax.axhline(peak_usage_gb, ls='--', color="red", label="Peak usage", alpha=0.3)
+
+    ax.set_xlabel("Time", labelpad=10)
+    date_formatter = lambda x, pos: matplotlib.dates.DateFormatter('%H:%M:%S')(x)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(date_formatter))
+    ax.xaxis.set(
+        major_locator=matplotlib.dates.AutoDateLocator(minticks=3, maxticks=10),
+        minor_locator=matplotlib.dates.AutoDateLocator(minticks=18, maxticks=60),
+    )
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    ax.set_ylabel("Memory [GB]", labelpad=15)
+    ax.yaxis.set_major_locator(MultipleLocator(2**4))
+    ax.yaxis.set_minor_locator(MultipleLocator(2**2))
+    ymin, ymax = ax.get_ylim()
+    # Set y limit prior to plotting installed memory
+    # (if we're at low utilisation, we don't care about the limit)
+    ax.set_ylim(0, ymax)
+    ax.axhline(total_gb, ls='--', color="black", label=f"Installed", alpha=0.5)
+
+    ax.grid(which="both", alpha=0.2, c="grey")
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.legend(loc="upper center", ncol=len(ax.lines), bbox_to_anchor=(0.5, 1.1, 0, 0))
+
+    plt.subplots_adjust(left=0.13, top=0.85, bottom=0.17, right=0.9)
+
+    f.savefig(args.plot_path, facecolor=ax.get_facecolor())
+    logging.info(f"Written plot to {args.plot_path}")
+
