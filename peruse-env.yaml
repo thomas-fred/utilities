@@ -1,0 +1,13 @@
+# to install this environment:
+# micromamba create -f peruse-env.yaml -y
+name: peruse
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python==3.12
+  - geopandas
+  - pandas
+  - pyarrow
+  - scipy
+  - xarray
