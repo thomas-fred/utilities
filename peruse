@@ -69,7 +69,9 @@ if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
     if len(sys.argv) < 2:
-        raise ValueError(f"Require at least one path to try and open, given {len(argv) - 1}")
+        raise ValueError(
+            f"Require at least one path to try and open, given {len(sys.argv) - 1}"
+        )
 
     paths: dict[int, str] = {}
     data: dict[int, Any] = {}
