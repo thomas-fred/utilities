@@ -6,6 +6,11 @@ open a Python prompt.
 
 Paths and opened files are available in integer keyed dictionaries, `data`
 and `paths`, respectively.
+
+You will require an appropriate environment to run this script. Install with:
+```
+micromamba create -f peruse-env.yaml -y
+```
 """
 
 import importlib
