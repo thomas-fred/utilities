@@ -54,7 +54,6 @@ if __name__ == "__main__":
     f, ax = plt.subplots(figsize=(14, 8))
 
     ax.plot(df.index, df["buff/cache"], label="Mem: buff/cache", alpha=0.5, c="orange")
-    ax.plot(df.index, df["available"], label="Mem: free", alpha=0.5, c="teal")
     ax.plot(df.index, df["used"], label="Mem: used", alpha=0.3, c="purple")
     ax.plot(df.index, df["used_less_buff/cache"], label="Mem: used - buff/cache", c="red")
     ax.plot(df.index, df["swap_free"], ls='dotted', label="Swap: free", c="cornflowerblue")
@@ -76,7 +75,8 @@ if __name__ == "__main__":
     ymin, ymax = ax.get_ylim()
     # Set y limit prior to plotting installed memory
     # (if we're at low utilisation, we don't care about the limit)
-    ax.set_ylim(0, ymax)
+    ax.set_ylim(-1, ymax)
+    ax.plot(df.index, df["available"], label="Mem: free", alpha=0.5, c="teal")
     ax.axhline(total_gb, ls='--', color="black", label=f"Mem: installed", alpha=0.5)
 
     ax.grid(which="both", alpha=0.2, c="grey")
